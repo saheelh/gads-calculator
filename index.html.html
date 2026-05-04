@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Specter Corwin — B2B SaaS Google Ads Budget Calculator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f5f0;
+    --card: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #4a4a4a;
+    --muted: #8a8a8a;
+    --line: #e8e4dc;
+    --accent: #0a0a0a;
+    --accent-soft: #1a1a1a;
+    --good: #1a7a3e;
+    --warn: #b8860b;
+    --bad: #b91c1c;
+    --highlight: #f0ebe0;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 32px 16px;
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .brand-mark {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+
+  .brand-mark .specter {
+    font-size: 22px;
+    letter-spacing: 0.08em;
+  }
+
+  .brand-mark .corwin {
+    font-size: 16px;
+    letter-spacing: 0.18em;
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  .header-tagline {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .hero {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 0 16px;
+  }
+
+  .hero h1 {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    line-height: 1.15;
+  }
+
+  .hero p {
+    font-size: 16px;
+    color: var(--ink-soft);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .calculator {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 768px) {
+    .calculator { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    padding: 32px;
+  }
+
+  .panel-inputs {
+    border-right: 1px solid var(--line);
+  }
+
+  @media (max-width: 768px) {
+    .panel-inputs { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+
+  .panel-title {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 24px;
+    font-weight: 600;
+  }
+
+  .input-group {
+    margin-bottom: 22px;
+  }
+
+  .input-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .label-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .info-btn {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--line);
+    color: var(--ink-soft);
+    border: none;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+
+  .info-btn:hover { background: var(--ink); color: white; }
+
+  .input-wrapper {
+    position: relative;
+  }
+
+  .input-prefix, .input-suffix {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .input-prefix { left: 14px; }
+  .input-suffix { right: 14px; }
+
+  input[type="number"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-size: 15px;
+    font-family: inherit;
+    background: var(--card);
+    color: var(--ink);
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"].has-prefix { padding-left: 28px; }
+  input[type="number"].has-suffix { padding-right: 28px; }
+
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--ink);
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .tooltip {
+    display: none;
+    margin-top: 8px;
+    padding: 12px 14px;
+    background: var(--highlight);
+    border-left: 2px solid var(--ink);
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+
+  .tooltip.active { display: block; }
+
+  .tooltip strong { color: var(--ink); }
+
+  .tooltip ul {
+    margin-top: 6px;
+    padding-left: 16px;
+  }
+
+  .tooltip code {
+    font-family: 'Menlo', 'Monaco', monospace;
+    font-size: 12px;
+    background: rgba(0,0,0,0.06);
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+
+  .panel-results {
+    background: linear-gradient(180deg, var(--card) 0%, #fafaf7 100%);
+  }
+
+  .headline-result {
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .headline-label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .headline-value {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: clamp(36px, 5vw, 52px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .headline-sub {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 24px;
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .metric-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .metric-value {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .interpretation {
+    margin-top: 24px;
+    padding: 16px;
+    border-radius: 4px;
+    background: var(--highlight);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    border-left: 3px solid var(--muted);
+    transition: border-color 0.2s;
+  }
+
+  .interpretation.good { border-left-color: var(--good); }
+  .interpretation.warn { border-left-color: var(--warn); }
+  .interpretation.bad { border-left-color: var(--bad); }
+
+  .interpretation strong { color: var(--ink); }
+
+  .footer {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .footer a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--ink-soft);
+    border-radius: 4px;
+    transition: all 0.15s;
+    font-family: inherit;
+    font-weight: 500;
+  }
+
+  .reset-btn:hover {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">
+        <div class="brand-mark">
+          <div class="specter">SPECTER</div>
+          <div class="corwin">CORWIN</div>
+        </div>
+      </div>
+      <div class="header-tagline">B2B SaaS Growth</div>
+    </div>
+
+    <div class="hero">
+      <h1>Google Ads Budget Calculator</h1>
+      <p>Built for B2B SaaS. Find out exactly how much you need to invest in Google Ads to hit your customer acquisition goals.</p>
+    </div>
+
+    <div class="calculator">
+      <div class="panel panel-inputs">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <div class="panel-title" style="margin-bottom: 0;">Your Inputs</div>
+          <button class="reset-btn" id="resetBtn" type="button">Reset</button>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="customers">
+            <span class="label-text">
+              New customers needed per month
+              <button class="info-btn" data-tip="tip-customers" type="button" aria-label="Info">i</button>
+            </span>
+          </label>
+          <div class="input-wrapper">
+            <input type="number" id="customers" placeholder="e.g. 10" min="1" step="1" />
+          </div>
+          <div class="tooltip" id="tip-customers">
+            How many <strong>new paying customers</strong> do you need to acquire from Google Ads each month? This is your starting goal — everything else works backward from here.
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="cpc">
+            <span class="label-text">
+              Average Cost Per Click
+              <button class="info-btn" data-tip="tip-cpc" type="button" aria-label="Info">i</button>
+            </span>
+          </label>
+          <div class="input-wrapper">
+            <span class="input-prefix">$</span>
+            <input type="number" id="cpc" placeholder="e.g. 6" min="0.1" step="0.1" class="has-prefix" />
+          </div>
+          <div class="tooltip" id="tip-cpc">
+            <strong>B2B SaaS benchmark: $5–$8</strong><br />
+            B2B SaaS keywords are competitive. Branded terms cost less; high-intent terms like "[competitor] alternative" cost more. Check your Google Ads account for your actual average — or use $6 as a default.
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="clickToLead">
+            <span class="label-text">
+              Click → Lead rate (Landing page conversion)
+              <button class="info-btn" data-tip="tip-ctl" type="button" aria-label="Info">i</button>
+            </span>
+          </label>
+          <div class="input-wrapper">
+            <input type="number" id="clickToLead" placeholder="e.g. 4.7" min="0.1" max="100" step="0.1" class="has-suffix" />
+            <span class="input-suffix">%</span>
+          </div>
+          <div class="tooltip" id="tip-ctl">
+            <strong>Same as your landing page conversion rate.</strong> Depends on your offer:
+            <ul>
+              <li>Free trial / self-serve signup: <strong>5–10%</strong> (best-in-class up to 15%)</li>
+              <li>Demo request / book-a-call: <strong>2–4%</strong></li>
+              <li>Gated content (ebook, whitepaper): <strong>0.5–2%</strong></li>
+            </ul>
+            Industry average for B2B SaaS Search ads is ~4.7%.
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="leadToCustomer">
+            <span class="label-text">
+              Lead → Customer rate
+              <button class="info-btn" data-tip="tip-ltc" type="button" aria-label="Info">i</button>
+            </span>
+          </label>
+          <div class="input-wrapper">
+            <input type="number" id="leadToCustomer" placeholder="e.g. 2" min="0.1" max="100" step="0.1" class="has-suffix" />
+            <span class="input-suffix">%</span>
+          </div>
+          <div class="tooltip" id="tip-ltc">
+            <strong>What % of your form-fill leads end up paying you?</strong><br />
+            Don't know it? Use these benchmarks:
+            <ul>
+              <li>SMB SaaS: <strong>~2.5%</strong></li>
+              <li>Mid-market: <strong>~1.5%</strong></li>
+              <li>Enterprise: <strong>~0.75%</strong></li>
+            </ul>
+            <em>Formula:</em> <code>(Lead-MQL) x (MQL-SQL) x (SQL-Customer)</code>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="acv">
+            <span class="label-text">
+              Average Customer Value (ACV)
+              <button class="info-btn" data-tip="tip-acv" type="button" aria-label="Info">i</button>
+            </span>
+          </label>
+          <div class="input-wrapper">
+            <span class="input-prefix">$</span>
+            <input type="number" id="acv" placeholder="e.g. 10000" min="1" step="100" class="has-prefix" />
+          </div>
+          <div class="tooltip" id="tip-acv">
+            <strong>Annual Contract Value</strong> — what a customer pays you per year on average. Used to assess whether your CAC is healthy. A good rule: your ACV should be at least 3x your CAC.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-results">
+        <div class="panel-title">Your Results</div>
+
+        <div class="headline-result">
+          <div class="headline-label">Monthly Google Ads Budget</div>
+          <div class="headline-value" id="r-budget">$—</div>
+          <div class="headline-sub" id="r-budget-sub">Fill in the inputs to calculate your budget</div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric">
+            <div class="metric-label">Clicks needed</div>
+            <div class="metric-value" id="r-clicks">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Leads needed</div>
+            <div class="metric-value" id="r-leads">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Cost per Lead</div>
+            <div class="metric-value" id="r-cpl">$—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">CAC</div>
+            <div class="metric-value" id="r-cac">$—</div>
+          </div>
+        </div>
+
+        <div class="interpretation" id="interpretation">
+          Fill in your inputs to see a personalized assessment of whether your unit economics are sustainable.
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      &copy; 2026 Specter Corwin &middot; Calculator built for B2B SaaS founders &amp; marketing teams
+    </div>
+  </div>
+
+<script>
+(function() {
+  var inputIds = ['customers', 'cpc', 'clickToLead', 'leadToCustomer', 'acv'];
+
+  function fmt(n) {
+    if (!isFinite(n) || isNaN(n)) return '—';
+    if (n >= 1000) return Math.round(n).toLocaleString('en-US');
+    if (n >= 100) return Math.round(n).toString();
+    return n.toFixed(1);
+  }
+
+  function fmtMoney(n) {
+    if (!isFinite(n) || isNaN(n)) return '$—';
+    return '$' + Math.round(n).toLocaleString('en-US');
+  }
+
+  function fmtMoneyPrecise(n) {
+    if (!isFinite(n) || isNaN(n)) return '$—';
+    if (n >= 100) return '$' + Math.round(n).toLocaleString('en-US');
+    return '$' + n.toFixed(2);
+  }
+
+  function getVal(id) {
+    var v = document.getElementById(id).value;
+    if (v === '' || v === null) return null;
+    var n = parseFloat(v);
+    return isNaN(n) ? null : n;
+  }
+
+  function calculate() {
+    var customers = getVal('customers');
+    var cpc = getVal('cpc');
+    var ctlRaw = getVal('clickToLead');
+    var ltcRaw = getVal('leadToCustomer');
+    var acv = getVal('acv');
+
+    var headlineEl = document.getElementById('r-budget');
+    var subEl = document.getElementById('r-budget-sub');
+    var interp = document.getElementById('interpretation');
+
+    var coreMissing = customers === null || cpc === null || ctlRaw === null || ltcRaw === null;
+
+    if (coreMissing) {
+      headlineEl.textContent = '$—';
+      subEl.textContent = 'Fill in the inputs to calculate your budget';
+      document.getElementById('r-clicks').textContent = '—';
+      document.getElementById('r-leads').textContent = '—';
+      document.getElementById('r-cpl').textContent = '$—';
+      document.getElementById('r-cac').textContent = '$—';
+      interp.classList.remove('good', 'warn', 'bad');
+      interp.innerHTML = 'Fill in your inputs to see a personalized assessment of whether your unit economics are sustainable.';
+      return;
+    }
+
+    var ctl = ctlRaw / 100;
+    var ltc = ltcRaw / 100;
+
+    var leadsNeeded = ltc > 0 ? customers / ltc : 0;
+    var clicksNeeded = ctl > 0 ? leadsNeeded / ctl : 0;
+    var budget = clicksNeeded * cpc;
+    var cpl = leadsNeeded > 0 ? budget / leadsNeeded : 0;
+    var cac = customers > 0 ? budget / customers : 0;
+
+    headlineEl.textContent = fmtMoney(budget);
+    document.getElementById('r-clicks').textContent = fmt(Math.ceil(clicksNeeded));
+    document.getElementById('r-leads').textContent = fmt(Math.ceil(leadsNeeded));
+    document.getElementById('r-cpl').textContent = fmtMoneyPrecise(cpl);
+    document.getElementById('r-cac').textContent = fmtMoney(cac);
+
+    subEl.textContent = 'to acquire ' + customers + ' ' + (customers === 1 ? 'customer' : 'customers') + ' per month';
+
+    interp.classList.remove('good', 'warn', 'bad');
+
+    if (acv !== null && acv > 0 && cac > 0) {
+      var ratio = acv / cac;
+      var html = '';
+      var cls = '';
+
+      if (ratio >= 3) {
+        cls = 'good';
+        html = '<strong>Healthy unit economics.</strong> Your ACV-to-CAC ratio is <strong>' + ratio.toFixed(1) + ':1</strong>, which is above the 3:1 benchmark for sustainable B2B SaaS growth. You can confidently scale ad spend at this CAC.';
+      } else if (ratio >= 1) {
+        cls = 'warn';
+        html = '<strong>Risky unit economics.</strong> Your ACV-to-CAC ratio is <strong>' + ratio.toFixed(1) + ':1</strong> — below the 3:1 benchmark. You are profitable on first-year revenue but margins are thin. Focus on improving your conversion rates or increasing ACV before scaling spend.';
+      } else {
+        cls = 'bad';
+        html = '<strong>Unprofitable on first-year revenue.</strong> Your CAC of <strong>' + fmtMoney(cac) + '</strong> exceeds your ACV of <strong>' + fmtMoney(acv) + '</strong>. Either your funnel needs major optimization, your ACV needs to grow, or you will need strong retention/expansion to make the math work over multiple years.';
+      }
+
+      interp.className = 'interpretation ' + cls;
+      interp.innerHTML = html;
+    } else {
+      interp.innerHTML = 'Enter your ACV (Average Customer Value) above to see whether your unit economics are sustainable.';
+    }
+  }
+
+  function toggleTooltip(id) {
+    var el = document.getElementById(id);
+    var wasActive = el.classList.contains('active');
+    var tooltips = document.querySelectorAll('.tooltip');
+    for (var i = 0; i < tooltips.length; i++) {
+      tooltips[i].classList.remove('active');
+    }
+    if (!wasActive) el.classList.add('active');
+  }
+
+  function resetAll() {
+    for (var i = 0; i < inputIds.length; i++) {
+      document.getElementById(inputIds[i]).value = '';
+    }
+    var tooltips = document.querySelectorAll('.tooltip');
+    for (var j = 0; j < tooltips.length; j++) {
+      tooltips[j].classList.remove('active');
+    }
+    calculate();
+    document.getElementById('customers').focus();
+  }
+
+  // Wire up inputs
+  for (var i = 0; i < inputIds.length; i++) {
+    document.getElementById(inputIds[i]).addEventListener('input', calculate);
+  }
+
+  // Wire up reset button
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+  // Wire up info buttons
+  var infoBtns = document.querySelectorAll('.info-btn');
+  for (var k = 0; k < infoBtns.length; k++) {
+    infoBtns[k].addEventListener('click', function() {
+      toggleTooltip(this.getAttribute('data-tip'));
+    });
+  }
+
+  calculate();
+})();
+</script>
+</body>
+</html>
